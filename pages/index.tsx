@@ -132,9 +132,8 @@ export default function Example() {
             <button
               disabled={prevDisabled}
               onClick={handlePrevClick}
-              className={cn("px-4 py-2 rounded text-white mr-2", {
-                "bg-orange-600": !prevDisabled,
-                "bg-orange-200": prevDisabled,
+              className={cn("px-4 py-2 rounded text-white mr-2 bg-orange-600", {
+                "opacity-40": prevDisabled,
               })}
             >
               Prev
@@ -143,9 +142,8 @@ export default function Example() {
             <button
               disabled={nextDisabled}
               onClick={handleNextClick}
-              className={cn("px-4 py-2 rounded text-white mr-2", {
-                "bg-orange-600": !nextDisabled,
-                "bg-orange-200": nextDisabled,
+              className={cn("px-4 py-2 rounded text-white mr-2 bg-orange-600", {
+                "opacity-40": nextDisabled,
               })}
             >
               Next
