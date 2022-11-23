@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Layout from "../components/layout";
 import cn from "classnames";
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { Sortable } from "../components/sortable";
 
 const steps = [
   {
@@ -26,6 +27,8 @@ export default function Example() {
   const [stepIndex, setStepIndex] = useState(0);
   const [searchForm, setSearchForm] = useState("");
   const [selectedValues, setSelectedValues] = useState<Array<string>>([]);
+  const [nextDisabled, setNextDisabled] = useState(true);
+  const [prevDisabled, setPrevDisabled] = useState(true);
 
   const handleNextClick = () => {
     if (stepIndex < steps.length - 1) {
@@ -82,11 +85,24 @@ export default function Example() {
       stepIndex === 0 &&
       (selectedValues.length < 3 || selectedValues.length > 10)
     ) {
-      return true;
+      return setNextDisabled(true);
     }
 
-    return stepIndex === steps.length - 1;
+    return setNextDisabled(stepIndex === steps.length - 1);
   };
+
+  const handlePrevDisabled = () => {
+    if (stepIndex === 0) {
+      return setPrevDisabled(true);
+    }
+
+    return setPrevDisabled(false);
+  };
+
+  useEffect(() => {
+    handleNextDisabled();
+    handlePrevDisabled();
+  }, [stepIndex, selectedValues.length]);
 
   return (
     <Layout>
@@ -112,22 +128,24 @@ export default function Example() {
             {steps[stepIndex].subTitle && <p>{steps[stepIndex].subTitle}</p>}
           </div>
 
-          <div>
+          <div className="py-6 border-b w-full flex justify-around md:w-52 md:border-b-0">
             <button
-              disabled={stepIndex === 0}
+              disabled={prevDisabled}
               onClick={handlePrevClick}
-              className={cn("px-4 py-2 bg-orange-600 rounded text-white mr-2", {
-                "bg-orange-200": stepIndex === 0,
+              className={cn("px-4 py-2 rounded text-white mr-2", {
+                "bg-orange-600": !prevDisabled,
+                "bg-orange-200": prevDisabled,
               })}
             >
               Prev
             </button>
 
             <button
-              disabled={handleNextDisabled()}
+              disabled={nextDisabled}
               onClick={handleNextClick}
-              className={cn("px-4 py-2 bg-orange-600 rounded text-white mr-2", {
-                "bg-orange-200": handleNextDisabled(),
+              className={cn("px-4 py-2 rounded text-white mr-2", {
+                "bg-orange-600": !nextDisabled,
+                "bg-orange-200": nextDisabled,
               })}
             >
               Next
@@ -158,24 +176,26 @@ export default function Example() {
             </div>
           )}
 
-          <div className="flex w-full">
-            <input
-              value={searchForm}
-              onChange={(e) => onSearchFormChange(e.target.value)}
-              placeholder="Find your values..."
-              className="rounded-full w-full mx-auto md:w-1/2 my-4 md:my-8 px-6 py-3 focus:ring focus:ring-orange-200 focus:border-orange-200"
-              type="text"
-            />
+          <div className="flex w-full justify-center items-center py-4 md:py-8 md:w-1/2 mx-auto">
+            <div className="relative w-full">
+              <MagnifyingGlassIcon className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2" />
+              <input
+                value={searchForm}
+                onChange={(e) => onSearchFormChange(e.target.value)}
+                placeholder="Find your values..."
+                className="rounded-full w-full mx-auto px-6 py-3 pl-14 focus:ring focus:ring-orange-200 focus:border-orange-200"
+                type="text"
+              />
+            </div>
           </div>
 
-          <ul className="grid grid-cols-3 gap-4">
+          <ul className="grid md:grid-cols-3 gap-4">
             {filteredValues.map((value, idx) => {
               const selected = selectedValues.indexOf(value) > -1;
 
               return (
-                <li className="">
+                <li key={idx}>
                   <button
-                    key={idx}
                     onClick={() => handleListValueClick(value)}
                     className={cn(
                       "w-full px-6 py-3 border rounded cursor-pointer hover:border-orange-600",
@@ -204,6 +224,39 @@ export default function Example() {
               </li>
             )}
           </ul>
+        </div>
+      )}
+
+      {stepIndex === 1 && (
+        <div className="grid grid-cols-2 max-w-sm mx-auto">
+          <div className="flex flex-col">
+            {selectedValues.map((_, id) => (
+              <Fragment key={id}>
+                {id === 0 && (
+                  <div className="px-6 py-3 mx-auto my-2 flex-nowrap">
+                    Most important
+                  </div>
+                )}
+                {id !== 0 && id !== selectedValues.length - 1 && (
+                  <div className="px-6 py-3 mx-auto my-2">&nbsp;</div>
+                )}
+                {id === selectedValues.length - 1 && (
+                  <div className="px-6 py-3 mx-auto my-2 overflow-hidden whitespace-nowrap">
+                    Least important
+                  </div>
+                )}
+              </Fragment>
+            ))}
+          </div>
+
+          <Sortable
+            items={selectedValues.map((name, id) => ({ id, name }))}
+            Component={({ children }: any) => (
+              <div className="px-6 py-3 bg-orange-200 mx-auto my-2 w-full text-center cursor-pointer">
+                {children}
+              </div>
+            )}
+          />
         </div>
       )}
     </Layout>
